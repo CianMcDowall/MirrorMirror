@@ -21,7 +21,6 @@ public class Weather {
     {
         try {
             String URL = KeyGet.buildWeatherURL();
-            System.out.println(URL);
             URI w = new URI(URL);
             URL weather = w.toURL();
 

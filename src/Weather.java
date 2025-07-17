@@ -59,10 +59,10 @@ public class Weather {
                     }
                 }
 
-                String setData = weatherData[s + 5].substring(weatherData[s + 5].indexOf("sunrise") + 11, weatherData[s + 5].indexOf("sunset") - 4);
-                String[] sets = setData.split(",");
-                String riseData = weatherData[s + 5].substring(weatherData[s + 5].indexOf("sunset") + 10, weatherData[s + 5].indexOf("precipitation_sum") - 4);
+                String riseData = weatherData[s + 5].substring(weatherData[s + 5].indexOf("sunrise") + 11, weatherData[s + 5].indexOf("sunset") - 4);
                 String[] rises = riseData.split(",");
+                String setData = weatherData[s + 5].substring(weatherData[s + 5].indexOf("sunset") + 10, weatherData[s + 5].indexOf("precipitation_sum") - 4);
+                String[] sets = setData.split(",");
                 String toPData = weatherData[s + 5].substring(weatherData[s + 5].indexOf("precipitation_sum") + 20, weatherData[s + 5].length() - 4);
                 String[] tPres = toPData.split(",");
 
@@ -323,8 +323,7 @@ public class Weather {
 
     public double getMinTemperature(int day)
     {
-        double min = 0;
-        min = temperature[day][0];
+        double min = temperature[day][0];
 
         for(int i = 0; i < temperature[day].length; i++)
         {
@@ -356,5 +355,35 @@ public class Weather {
     public double getCurrentWindSpeed()
     {
         return getWindSpeed(0, LocalDateTime.now().getHour());
+    }
+
+    public double getMaxPrecipitation(int day)
+    {
+        double max = 0;
+
+        for(int i = 0; i < precipitation[day].length; i++)
+        {
+            if(precipitation[day][i] >= max)
+            {
+                max = precipitation[day][i];
+            }
+        }
+
+        return max;
+    }
+
+    public double getMinPrecipitation(int day)
+    {
+        double min = precipitation[day][0];
+
+        for(int i = 0; i < precipitation[day].length; i++)
+        {
+            if(precipitation[day][i] <= min)
+            {
+                min = precipitation[day][i];
+            }
+        }
+
+        return min;
     }
 }

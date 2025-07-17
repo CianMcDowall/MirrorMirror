@@ -8,7 +8,7 @@ public class KeyGet {
         double[] university = {-37.72062, 145.04718};
         double[] work = {-37.69123, 145.02735};
         double[][] locations = {home, university, work};
-        String toReturn = weatherBaseURL + "latitude=" + locations[0][0] + "," + locations[1][0] + "," + locations[2][0] + "&longitude=" + locations[0][1] + "," + locations[1][1] + "," + locations[2][1] + "&daily=sunrise,sunset,precipitation_sum&hourly=temperature_2m,precipitation,apparent_temperature,wind_speed_10m&forecast_days=3";
+        String toReturn = weatherBaseURL + "latitude=" + locations[0][0] + "," + locations[1][0] + "," + locations[2][0] + "&longitude=" + locations[0][1] + "," + locations[1][1] + "," + locations[2][1] + "&daily=sunrise,sunset,precipitation_sum&hourly=temperature_2m,precipitation,apparent_temperature,wind_speed_10m&forecast_days=3&timezone=auto";
         return toReturn;
     }
 

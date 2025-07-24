@@ -1,6 +1,7 @@
 public class KeyGet {
     private static String weatherBaseURL = "https://api.open-meteo.com/v1/forecast?";
-    private static String newsBaseURL = "https://newsapi.org/v2/";
+    private static String newsBaseURL = "https://content.guardianapis.com/search?";
+    private static String newsAPIKey = "0ea2b4ee-df55-47da-8691-8afa8bd5c066";
 
     public static String buildWeatherURL()
     {
@@ -16,7 +17,12 @@ public class KeyGet {
     {
         if(selection == 0)
         {
-            return newsBaseURL += "top-headlines?country=au&apiKey=83672ae5290b44d7bef4125c7837a420";
+            String toReturn = newsBaseURL + "section=australia-news" + "&order-by=newest&page-size=1" + "&api-key=" + newsAPIKey;
+            return toReturn;
+        } else if(selection == 1)
+        {
+            String toReturn = newsBaseURL + "section=world" + "&order-by=newest&page-size=1" + "&api-key=" + newsAPIKey;
+            return toReturn;            
         }
         return null;
     }

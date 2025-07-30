@@ -16,7 +16,15 @@ public class App {
     private static Container dateContainer;
     private static JLabel date;
 
+    private static Container newsContainer;
+    private static JLabel ausNews;
+
     private static int page = 0;
+    private static int lastPage = 0;
+    private static int lastHour;
+
+    private static Container gTimeContainer;
+    private static JLabel gTime;
 
     //SM = 1 for testing
     //SM = 2 for operation
@@ -32,6 +40,8 @@ public class App {
 
         container.paintComponents(container.getGraphics());
 
+        lastHour = LocalDateTime.now().getHour();
+
         new Thread(() -> {
             update();
         }).start();
@@ -40,6 +50,7 @@ public class App {
     private static void openWindow()
     {
         frame = new JFrame("Smart Mirror");
+        frame.setUndecorated(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         frame.setSize(540 * sizeMultiplier, 960 * sizeMultiplier);
@@ -50,18 +61,27 @@ public class App {
 
     private static void printHome()
     {
-        page = 0;
+        //page = 0;
+        container.removeAll();
+        container.print(container.getGraphics());
 
         try {
             printWeather();
         } catch (Exception e)
         {
             temperatureContainer.setLayout(new GridLayout(1, 1));
-            JLabel eLabel = new JLabel(e.getLocalizedMessage());
+            JLabel eLabel = new JLabel("Weather cooked it.");
             eLabel.setFont(new Font("Bahnschrift", Font.PLAIN, 24 * sizeMultiplier));
             eLabel.setForeground(Color.RED);
             temperatureContainer.add(eLabel);
             container.add(temperatureContainer);;
+        }
+
+        try {
+            printNews();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
         }
 
         printTime();
@@ -221,6 +241,44 @@ public class App {
         container.add(windContainer);
     }
 
+    private static void printNews() throws Exception
+    {
+        Article aus = Interpreter.getNews("Australia");
+        Article world = Interpreter.getNews("World");
+
+        String ausHeadline = aus.getHeadline();
+        String worldHeadline = world.getHeadline();
+
+        newsContainer = new Container();
+        newsContainer.setBounds(-20 * sizeMultiplier, 25 * sizeMultiplier, 520 * sizeMultiplier, 80 * sizeMultiplier);
+        newsContainer.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.WEST;
+
+        Font newsFont = new Font("Bahnschrift", Font.PLAIN, 9 * sizeMultiplier);
+        
+        ausNews = new JLabel(ausHeadline);
+        ausNews.setFont(newsFont);
+        ausNews.setForeground(new Color(70, 156, 0));
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridheight = 1;
+        c.gridwidth = 1;
+        newsContainer.add(ausNews, c);
+
+        JLabel worldNews = new JLabel(worldHeadline);
+        worldNews.setFont(newsFont);
+        worldNews.setForeground(new Color(0, 190, 255));
+        worldNews.setHorizontalAlignment(JLabel.LEFT);
+        c.gridx = 0;
+        c.gridy = 1;
+        c.gridheight = 1;
+        c.gridwidth = 1;
+        newsContainer.add(worldNews, c);
+
+        container.add(newsContainer);
+    }
+
     private static void printTime()
     {
         timeContainer = new Container();
@@ -279,12 +337,198 @@ public class App {
     private static void fullWeather()
     {
         try {
-            Weather weather = new Weather();
+            Weather weather = Interpreter.getWeather("all");
             container.removeAll();
+            container.repaint();
             page = 1;
+            lastPage = 1;
+
+            gTimeContainer = new Container();
+            gTimeContainer.setBounds(460 * sizeMultiplier, 30 * sizeMultiplier, 40 * sizeMultiplier, 20 * sizeMultiplier);
+            gTimeContainer.setLayout(new GridLayout());
+
+            String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("h:mm"));
+
+            gTime = new JLabel(time, JLabel.LEFT);
+            gTime.setFont(new Font("Bahnschrift", Font.PLAIN, 18 * sizeMultiplier));
+            gTime.setForeground(Color.WHITE);
+            gTimeContainer.add(gTime);
+
+            for(int location = 0; location < 3; location++)
+            {
+                Weather weatherLoc;
+                String labelString;
+                switch (location) {
+                    case 0: weatherLoc = weather.home;
+                            labelString = "Home.";
+                            break;
+                    case 1: weatherLoc = weather.uni;
+                            labelString = "University.";
+                            break;
+                    case 2: weatherLoc = weather.work;
+                            labelString = "Work.";
+                            break;
+                    default: throw new Exception("For statement in fullWeather(), incorrect number");
+                }
+
+                int pushDown = location * 300 * sizeMultiplier;
+                JPanel homeGraphPanel = new JPanel() {
+                    @Override
+                    protected void paintComponent(Graphics g1)
+                    {
+                        super.paintComponent(g1);
+                        Graphics2D g = (Graphics2D) g1;
+                        g.setColor(Color.WHITE);
+                        BasicStroke tStroke = new BasicStroke(4 * sizeMultiplier);
+                        BasicStroke pStroke = new BasicStroke(2 * sizeMultiplier);
+                        int frameHeight = 130 * sizeMultiplier;
+
+                        double maxTemp = weatherLoc.getMaxTemperature(0);
+                        double minTemp = weatherLoc.getMinTemperature(0);
+                        double maxPrec = weatherLoc.getMaxPrecipitation(0);
+                        double minPrec = weatherLoc.getMinPrecipitation(0); 
+
+                        int tempLastY = (int) (frameHeight - (frameHeight * 0.95 * ((weatherLoc.getTemperature(0, 0) - minTemp) / (maxTemp - minTemp))));
+                        int precLastY = 0;
+                        if(maxPrec >= 5)
+                        {
+                            precLastY = (int) (frameHeight - (frameHeight * 0.95 * ((weatherLoc.getPrecipitation(0, 0) - minPrec) / (maxPrec - minPrec))) + 5);
+                        } else {
+                            precLastY = (int) (frameHeight - (frameHeight * 0.95 * ((weatherLoc.getPrecipitation(0, 0) - minPrec) / (6 - minPrec))) + 5);
+                        }
+                        int lastx = 0;
+                        double[] temps = weatherLoc.getTemperature(0);
+                        double[] precs = weatherLoc.getPrecipitation(0);
+
+                        LocalDateTime sunrise = weatherLoc.getSunrise(0);
+                        int sunriseHour = sunrise.getHour();
+
+                        LocalDateTime sunset = weatherLoc.getSunset(0);
+                        int sunsetHour = sunset.getHour();
+
+                        int nowHour = LocalDateTime.now().getHour();
+
+                        for(int i = 1; i < temps.length; i++)
+                        {
+                            double normalisedTemp = ((temps[i] - minTemp) / (maxTemp - minTemp));
+                            double normalisedPrec = 0.0;
+                            if(maxPrec >= 5)
+                            {
+                                normalisedPrec = ((precs[i] - minPrec) / (maxPrec - minPrec));
+                            } else {
+                                normalisedPrec = ((precs[i] - minPrec) / (5 - minPrec));
+                            }
+
+                            int tempY = (int) (frameHeight - (frameHeight * 0.95 * normalisedTemp));
+                            int precY = (int) (frameHeight - (frameHeight * 0.95 * normalisedPrec) + 5);
+                            
+                            Color tempColor = new Color(255, (int) (frameHeight * (1 - normalisedTemp) + 50), (int) (frameHeight * (1 - normalisedTemp)));
+                            g.setColor(tempColor);
+                            g.setStroke(tStroke);
+                            g.drawLine(lastx, tempLastY, lastx + 20, tempY);
+                            
+                            g.setColor(Color.BLUE);
+                            g.setStroke(pStroke);
+                            g.drawLine(lastx, precLastY, lastx + 20, precY);
+
+                            if(i == sunriseHour || i == sunsetHour)
+                            {
+                                g.setColor(Color.YELLOW);
+                                g.setStroke(tStroke);
+                                g.drawLine(lastx, tempLastY - 15, lastx, frameHeight);
+                            }
+
+                            if(i == nowHour)
+                            {
+                                g.setColor(tempColor);
+                                g.setStroke(new BasicStroke(10));
+                                g.drawOval((lastx + 10) * sizeMultiplier, (tempY - 5) * sizeMultiplier, 10 * sizeMultiplier, 10 * sizeMultiplier);
+                            }
+
+                            lastx += 20 * sizeMultiplier;
+                            tempLastY = tempY;
+                            precLastY = precY;
+                        }
+                    }
+                };
+
+                homeGraphPanel.setBounds(35 * sizeMultiplier, 100 * sizeMultiplier + pushDown, 460 * sizeMultiplier, 160 * sizeMultiplier);
+                homeGraphPanel.setOpaque(false);
+
+                JLabel title = new JLabel(labelString, JLabel.LEFT);
+                title.setFont(new Font("Bahnschrift", Font.PLAIN, 36 * sizeMultiplier));
+                title.setForeground(Color.WHITE);
+                title.setBounds(10 * sizeMultiplier, 20 * sizeMultiplier + pushDown, 180 * sizeMultiplier, 45 * sizeMultiplier);
+                container.add(title);
+
+                LocalDateTime sunrise = weatherLoc.getSunrise(0);
+                int sunriseHour = sunrise.getHour();
+                String sunriseTime = sunrise.format(DateTimeFormatter.ofPattern("h:mm"));
+
+                LocalDateTime sunset = weatherLoc.getSunset(0);
+                int sunsetHour = sunset.getHour();
+                String sunsetTime = sunset.format(DateTimeFormatter.ofPattern("h:mm"));
+
+                String timeText = sunriseTime;
+
+                for(int i = 0; i < 23; i++)
+                {
+                    if(i == sunriseHour || i == sunsetHour)
+                    {
+                        JLabel timeLabel = new JLabel(timeText, JLabel.CENTER);
+                        timeLabel.setFont(new Font("Bahnschrift", Font.PLAIN, 18 * sizeMultiplier));
+                        timeLabel.setForeground(Color.YELLOW);
+                        timeLabel.setBounds((i * 20) - 5, 240 * sizeMultiplier, 40, 25);
+                        container.add(timeLabel);
+                        timeText = sunsetTime;
+                    }
+                }
+
+                Container homeContainer = new Container();
+                homeContainer.setBounds(20 * sizeMultiplier, 230 * sizeMultiplier + pushDown, 490 * sizeMultiplier, 100 * sizeMultiplier);
+                homeContainer.setLayout(new GridBagLayout());
+
+                double[] temps = weatherLoc.getTemperature(0);
+                double maxTemp = weatherLoc.getMaxTemperature(0);
+                double minTemp = weatherLoc.getMinTemperature(0);
+                int currHour = LocalDateTime.now().getHour();
+                for(int i = 0; i < temps.length; i++)
+                {
+                    JLabel temp = new JLabel(temps[i] + " ", JLabel.CENTER);
+                    int fontSize = 0;
+                    if(i >= currHour + 3 || i <= currHour - 3)
+                    {
+                        fontSize = 9 * sizeMultiplier;
+                    } else if(i == currHour + 2 || i == currHour - 2) {
+                        fontSize = 15 * sizeMultiplier;
+                    } else if(i == currHour + 1 || i == currHour - 1) {
+                        fontSize = 21 * sizeMultiplier;
+                    } else {
+                        fontSize = 28 * sizeMultiplier;
+                    }
+                    temp.setFont(new Font("Bahnschrift", Font.PLAIN, fontSize));
+                    Color fontColor = Color.WHITE;
+                    if(temps[i] == maxTemp)
+                    {
+                        fontColor = new Color(255, 160, 160);
+                    } else if(temps[i] == minTemp)
+                    {
+                        fontColor = new Color(160, 160, 255);
+                    }
+                    temp.setForeground(fontColor);
+                    homeContainer.add(temp);
+                }
+        
+                container.add(homeGraphPanel);
+                container.add(homeContainer);
+            }
+            
+            container.add(gTimeContainer);
+            container.revalidate();
+            container.repaint();
         } catch (Exception e) {
             page = 0;
-            
+            System.out.println(e.getLocalizedMessage());
         }
     }
 
@@ -292,12 +536,30 @@ public class App {
     {
         if(page == 0)
         {
+            if(lastPage != 0)
+            {
+                printHome();
+            }
             updateHome();
         } else if (page == 1) {
+            if(lastPage != 1)
+            {
+                fullWeather();
+            } 
             updateFullWeather();
         } else {
             page = 0;
             updateHome();
+        }
+        lastPage = page;
+
+        int currentMinute = LocalDateTime.now().getMinute();
+
+        if (currentMinute == 0 || currentMinute == 15 || currentMinute == 30 || currentMinute == 45)
+        {
+            page = 1;
+        } else {
+            page = 0;
         }
 
         try {
@@ -334,6 +596,17 @@ public class App {
 
     private static void updateFullWeather()
     {
+        int h = LocalDateTime.now().getHour();
+        if(lastHour != h)
+        {
+            fullWeather();
+            lastHour = h;
+        }
 
+        String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("h:mm"));
+        gTime.setText(time);
+
+        gTimeContainer.revalidate();
+        gTimeContainer.repaint();
     }
 }

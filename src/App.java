@@ -26,11 +26,20 @@ public class App {
     private static Container gTimeContainer;
     private static JLabel gTime;
 
+    private static String APIKey;
+
     //SM = 1 for testing
     //SM = 2 for operation
     private static int sizeMultiplier = 1;
     public static void main(String[] args)
     {
+        try {
+            APIKey = args[0];
+        } catch (Exception e)
+        {
+            APIKey = "";
+        }
+
         openWindow();
 
         temperatureContainer = new Container();
@@ -243,8 +252,8 @@ public class App {
 
     private static void printNews() throws Exception
     {
-        Article aus = Interpreter.getNews("Australia");
-        Article world = Interpreter.getNews("World");
+        Article aus = Interpreter.getNews("Australia", APIKey);
+        Article world = Interpreter.getNews("World", APIKey);
 
         String ausHeadline = aus.getHeadline();
         String worldHeadline = world.getHeadline();

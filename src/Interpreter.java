@@ -20,7 +20,7 @@ public class Interpreter {
         return new Weather(locationNumber);
     }
 
-    public static Article getNews(String section) throws Exception
+    public static Article getNews(String section, String APIKey) throws Exception
     {
         int sectionNumber = -1;
         if(section.trim().equalsIgnoreCase("Aus") || section.trim().equalsIgnoreCase("Australia"))
@@ -31,6 +31,6 @@ public class Interpreter {
             sectionNumber = 1;
         }
 
-        return new Article(sectionNumber);
+        return new Article(sectionNumber, APIKey);
     }
 }

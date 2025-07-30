@@ -9,10 +9,10 @@ public class Article {
     private LocalDateTime publicationDate;
     private String title;
     
-    public Article(int sectionNumber) throws Exception
+    public Article(int sectionNumber, String APIKey) throws Exception
     {
         try {
-            String URL = KeyGet.buildNewsURL(sectionNumber);
+            String URL = KeyGet.buildNewsURL(sectionNumber, APIKey);
             URI n = new URI(URL);
             URL weather = n.toURL();
 

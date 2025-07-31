@@ -269,20 +269,23 @@ public class App {
 
         String[] ausHeadline = new String[2];
         ausHeadline[0] = aus.getHeadline();
-        String worldHeadline = world.getHeadline();
+        String worldHeadline[] = new String[2];
+        worldHeadline[0] = world.getHeadline();
 
         newsContainer = new Container();
-        newsContainer.setBounds(-20 * sizeMultiplier, 25 * sizeMultiplier, 520 * sizeMultiplier, 80 * sizeMultiplier);
+        newsContainer.setBounds(5 * sizeMultiplier, 25 * sizeMultiplier, 520 * sizeMultiplier, 80 * sizeMultiplier);
         newsContainer.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
 
-        Font newsFont = new Font("Bahnschrift", Font.PLAIN, 9 * sizeMultiplier);
+        Font newsFont = new Font("Bahnschrift", Font.PLAIN, 9 * sizeMultiplier);      
 
-        if (ausHeadline[0].length() >= 100)
+        if (ausHeadline[0].length() > 110)
         {
-            int nextSpace = ausHeadline[0].indexOf(" ", 110);
-            ausHeadline[1] = ausHeadline[0].substring(nextSpace);
+            int nextSpace = ausHeadline[0].indexOf(" ", 100);
+            ausHeadline[1] = ausHeadline[0].substring(nextSpace + 1);
             ausHeadline[0] = ausHeadline[0].substring(0, nextSpace);
 
             Color auColour = new Color(70, 156, 0);
@@ -290,40 +293,49 @@ public class App {
             ausNews = new JLabel(ausHeadline[0]);
             ausNews.setFont(newsFont);
             ausNews.setForeground(auColour);
-            c.gridx = 0;
             c.gridy = 0;
-            c.gridheight = 1;
-            c.gridwidth = 1;
             newsContainer.add(ausNews, c);
 
             JLabel ausNews2 = new JLabel(ausHeadline[1]);
             ausNews2.setFont(newsFont);
             ausNews2.setForeground(auColour);
-            c.gridx = 0;
             c.gridy = 1;
-            c.gridheight = 1;
-            c.gridwidth = 1;
             newsContainer.add(ausNews2, c);
         } else {
-            ausNews = new JLabel(ausHeadline[0]);
+            ausNews = new JLabel(ausHeadline[0], JLabel.LEFT);
             ausNews.setFont(newsFont);
             ausNews.setForeground(new Color(70, 156, 0));
-            c.gridx = 0;
             c.gridy = 0;
-            c.gridheight = 1;
-            c.gridwidth = 1;
             newsContainer.add(ausNews, c);
         }
 
-        JLabel worldNews = new JLabel(worldHeadline);
-        worldNews.setFont(newsFont);
-        worldNews.setForeground(new Color(0, 190, 255));
-        worldNews.setHorizontalAlignment(JLabel.LEFT);
-        c.gridx = 0;
-        c.gridy = 2;
-        c.gridheight = 1;
-        c.gridwidth = 1;
-        newsContainer.add(worldNews, c);
+        if (worldHeadline[0].length() > 110)
+        {
+            int nextSpace = worldHeadline[0].indexOf(" ", 100);
+            worldHeadline[1] = worldHeadline[0].substring(nextSpace + 1);
+            worldHeadline[0] = worldHeadline[0].substring(0, nextSpace);
+            
+            Color worldColour = new Color(0, 190, 255);
+
+            JLabel worldNews = new JLabel(worldHeadline[0]);
+            worldNews.setFont(newsFont);
+            worldNews.setForeground(worldColour);
+            c.gridy = 2;
+            newsContainer.add(worldNews, c);
+
+            JLabel worldNews2 = new JLabel(worldHeadline[1]);
+            worldNews2.setFont(newsFont);
+            worldNews2.setForeground(worldColour);
+            c.gridy = 3;
+            newsContainer.add(worldNews2, c);
+        } else {
+            JLabel worldNews = new JLabel(worldHeadline[0], JLabel.LEFT);
+            worldNews.setFont(newsFont);
+            worldNews.setForeground(new Color(0, 190, 255));
+            c.gridy = 2;
+            newsContainer.add(worldNews, c);
+        }
+
 
         container.add(newsContainer);
     }

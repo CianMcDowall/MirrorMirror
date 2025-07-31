@@ -34,10 +34,12 @@ public class App {
     public static void main(String[] args)
     {
         try {
-            APIKey = args[0];
+            sizeMultiplier = Integer.parseInt(args[0]);
+            APIKey = args[1];
         } catch (Exception e)
         {
             APIKey = "";
+            sizeMultiplier = 1;
         }
 
         openWindow();
@@ -90,7 +92,17 @@ public class App {
             printNews();
         } catch (Exception e)
         {
+            ausNews = new JLabel("Slow news day...");
+            ausNews.setFont(new Font("Bahnschrift", Font.PLAIN, 14 * sizeMultiplier));
+            ausNews.setForeground(Color.white);
+            newsContainer = new Container();
+            newsContainer.setBounds(10 * sizeMultiplier, 25 * sizeMultiplier, 520 * sizeMultiplier, 80 * sizeMultiplier);
+            newsContainer.setLayout(new GridLayout());
+            newsContainer.add(ausNews);
+            container.add(newsContainer);
             e.printStackTrace();
+            newsContainer.revalidate();
+            newsContainer.repaint();
         }
 
         printTime();
@@ -255,7 +267,8 @@ public class App {
         Article aus = Interpreter.getNews("Australia", APIKey);
         Article world = Interpreter.getNews("World", APIKey);
 
-        String ausHeadline = aus.getHeadline();
+        String[] ausHeadline = new String[2];
+        ausHeadline[0] = aus.getHeadline();
         String worldHeadline = world.getHeadline();
 
         newsContainer = new Container();
@@ -265,22 +278,49 @@ public class App {
         c.anchor = GridBagConstraints.WEST;
 
         Font newsFont = new Font("Bahnschrift", Font.PLAIN, 9 * sizeMultiplier);
-        
-        ausNews = new JLabel(ausHeadline);
-        ausNews.setFont(newsFont);
-        ausNews.setForeground(new Color(70, 156, 0));
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridheight = 1;
-        c.gridwidth = 1;
-        newsContainer.add(ausNews, c);
+
+        if (ausHeadline[0].length() >= 100)
+        {
+            int nextSpace = ausHeadline[0].indexOf(" ", 110);
+            ausHeadline[1] = ausHeadline[0].substring(nextSpace);
+            ausHeadline[0] = ausHeadline[0].substring(0, nextSpace);
+
+            Color auColour = new Color(70, 156, 0);
+
+            ausNews = new JLabel(ausHeadline[0]);
+            ausNews.setFont(newsFont);
+            ausNews.setForeground(auColour);
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridheight = 1;
+            c.gridwidth = 1;
+            newsContainer.add(ausNews, c);
+
+            JLabel ausNews2 = new JLabel(ausHeadline[1]);
+            ausNews2.setFont(newsFont);
+            ausNews2.setForeground(auColour);
+            c.gridx = 0;
+            c.gridy = 1;
+            c.gridheight = 1;
+            c.gridwidth = 1;
+            newsContainer.add(ausNews2, c);
+        } else {
+            ausNews = new JLabel(ausHeadline[0]);
+            ausNews.setFont(newsFont);
+            ausNews.setForeground(new Color(70, 156, 0));
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridheight = 1;
+            c.gridwidth = 1;
+            newsContainer.add(ausNews, c);
+        }
 
         JLabel worldNews = new JLabel(worldHeadline);
         worldNews.setFont(newsFont);
         worldNews.setForeground(new Color(0, 190, 255));
         worldNews.setHorizontalAlignment(JLabel.LEFT);
         c.gridx = 0;
-        c.gridy = 1;
+        c.gridy = 2;
         c.gridheight = 1;
         c.gridwidth = 1;
         newsContainer.add(worldNews, c);
@@ -366,18 +406,14 @@ public class App {
             for(int location = 0; location < 3; location++)
             {
                 Weather weatherLoc;
-                String labelString;
                 switch (location) {
                     case 0: weatherLoc = weather.home;
-                            labelString = "Home.";
                             break;
                     case 1: weatherLoc = weather.uni;
-                            labelString = "University.";
                             break;
                     case 2: weatherLoc = weather.work;
-                            labelString = "Work.";
                             break;
-                    default: throw new Exception("For statement in fullWeather(), incorrect number");
+                    default:weatherLoc = null;
                 }
 
                 int pushDown = location * 300 * sizeMultiplier;
@@ -464,7 +500,7 @@ public class App {
                 homeGraphPanel.setBounds(35 * sizeMultiplier, 100 * sizeMultiplier + pushDown, 460 * sizeMultiplier, 160 * sizeMultiplier);
                 homeGraphPanel.setOpaque(false);
 
-                JLabel title = new JLabel(labelString, JLabel.LEFT);
+                JLabel title = new JLabel(weatherLoc.getName(), JLabel.LEFT);
                 title.setFont(new Font("Bahnschrift", Font.PLAIN, 36 * sizeMultiplier));
                 title.setForeground(Color.WHITE);
                 title.setBounds(10 * sizeMultiplier, 20 * sizeMultiplier + pushDown, 180 * sizeMultiplier, 45 * sizeMultiplier);
@@ -548,6 +584,8 @@ public class App {
             if(lastPage != 0)
             {
                 printHome();
+                temperatureContainer.revalidate();
+                temperatureContainer.repaint();
             }
             updateHome();
         } else if (page == 1) {

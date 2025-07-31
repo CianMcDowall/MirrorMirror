@@ -17,6 +17,8 @@ public class Weather {
     public Weather uni;
     public Weather work;
 
+    private String name;
+
     public Weather(int location) throws Exception 
     {
         try {
@@ -54,8 +56,6 @@ public class Weather {
                         precipitation[i][j] = Double.parseDouble(precs[i * 24 + j]);
                         apparentTemperature[i][j] = Double.parseDouble(apTems[i * 24 + j]);
                         windSpeed[i][j] = Double.parseDouble(winds[i * 24 + j]);
-
-                        //System.out.println(i + ", " + j + " >> " + temperature[i][j]);
                     }
                 }
 
@@ -75,12 +75,21 @@ public class Weather {
                     sunrise[i] = LocalDateTime.parse(rises[i]);
                     precipitationSum[i] = Double.parseDouble(tPres[i]);
                 }
+
+                switch (location) {
+                    case 0: name = "Home";
+                            break;
+                    case 1: name = "University";
+                            break;
+                    case 2: name = "Work";
+                            break;
+                    default:throw new Exception();
+                }
             } else {
                 throw new Exception("Invalid Location Given.");
             }
         } catch (Exception e)
         {
-            //throw e;
             e.printStackTrace();
             throw new Exception("Weather cooked it.");
         }
@@ -385,5 +394,10 @@ public class Weather {
         }
 
         return min;
+    }
+
+    public String getName()
+    {
+        return name;
     }
 }

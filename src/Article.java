@@ -49,4 +49,16 @@ public class Article {
     {
         return publicationDate.format(DateTimeFormatter.ofPattern("k:m:s ")) + title;
     }
+
+    public boolean equals(Article otherArticle)
+    {
+        if (publicationDate.equals(otherArticle.getPublicationDate()))
+        {
+            if(title.equals(otherArticle.getHeadline()))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

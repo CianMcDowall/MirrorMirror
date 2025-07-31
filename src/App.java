@@ -28,6 +28,11 @@ public class App {
 
     private static String APIKey;
 
+    private static boolean checkingNews;
+
+    private static Article aus;
+    private static Article world;
+
     //SM = 1 for testing
     //SM = 2 for operation
     private static int sizeMultiplier = 1;
@@ -89,6 +94,8 @@ public class App {
         }
 
         try {
+            aus = Interpreter.getNews("Australia", APIKey);
+            world = Interpreter.getNews("World", APIKey);
             printNews();
         } catch (Exception e)
         {
@@ -264,9 +271,6 @@ public class App {
 
     private static void printNews() throws Exception
     {
-        Article aus = Interpreter.getNews("Australia", APIKey);
-        Article world = Interpreter.getNews("World", APIKey);
-
         String[] ausHeadline = new String[2];
         ausHeadline[0] = aus.getHeadline();
         String worldHeadline[] = new String[2];
@@ -589,6 +593,23 @@ public class App {
         }
     }
 
+    private static void checkNews() throws Exception
+    {
+        Article newAus = Interpreter.getNews("Australia", APIKey);
+        Article newWorld = Interpreter.getNews("World", APIKey);
+
+        if (!newAus.equals(aus) || !newWorld.equals(world))
+        {
+            aus = newAus;
+            world = newWorld;
+
+            printNews();
+        }
+
+        newsContainer.revalidate();
+        newsContainer.repaint();
+    }
+
     private static void update()
     {
         if(page == 0)
@@ -645,6 +666,20 @@ public class App {
         minute.setText(minutes);
         second.setText(seconds);
         date.setText(d);
+
+        if (checkingNews == false && seconds.equals("00"))
+        {
+            checkingNews = true;
+            new Thread(() -> {
+                try {
+                    checkNews();
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                checkingNews = false;
+            }).start();
+        }
 
         timeContainer.revalidate();
         timeContainer.repaint();

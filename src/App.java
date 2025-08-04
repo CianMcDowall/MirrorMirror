@@ -7,6 +7,8 @@ public class App {
     private static JFrame frame;
     private static Container container;
     private static Container temperatureContainer;
+    private static Container rainContainer;
+    private static Container windContainer;
     
     private static Container timeContainer;
     private static JLabel hour;
@@ -126,7 +128,7 @@ public class App {
         String nexRain = weather.getNextPrecipitation() + "";
         String totRain = weather.getPrecipitationSum(0) + "";
 
-        Container rainContainer = new Container();
+        rainContainer = new Container();
         rainContainer.setBounds(292 * sizeMultiplier, 245 * sizeMultiplier, 225 * sizeMultiplier, 50 * sizeMultiplier);
         
         temperatureContainer.setLayout(new GridBagLayout());
@@ -241,7 +243,7 @@ public class App {
             rainContainer.add(rainNow);
         }
 
-        Container windContainer = new Container();
+        windContainer = new Container();
         windContainer.setBounds(325 * sizeMultiplier, 170 * sizeMultiplier, 150 * sizeMultiplier, 50 * sizeMultiplier);
         windContainer.setLayout(new GridBagLayout());
 
@@ -539,7 +541,7 @@ public class App {
                         JLabel timeLabel = new JLabel(timeText, JLabel.CENTER);
                         timeLabel.setFont(new Font("Bahnschrift", Font.PLAIN, 18 * sizeMultiplier));
                         timeLabel.setForeground(Color.YELLOW);
-                        timeLabel.setBounds((i * 20) - 5, 240 * sizeMultiplier, 40, 25);
+                        timeLabel.setBounds((i * 20) - 5, 240 * sizeMultiplier + pushDown, 40, 25);
                         container.add(timeLabel);
                         timeText = sunsetTime;
                     }
@@ -617,10 +619,16 @@ public class App {
             if(lastPage != 0)
             {
                 printHome();
-                temperatureContainer.revalidate();
-                temperatureContainer.repaint();
+                container.revalidate();
+                container.repaint();
             }
-            updateHome();
+            try {
+                updateHome();
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
         } else if (page == 1) {
             if(lastPage != 1)
             {

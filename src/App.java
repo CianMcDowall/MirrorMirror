@@ -49,6 +49,12 @@ public class App {
             sizeMultiplier = 1;
         }
 
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        if(sizeMultiplier == 2 && gd.isFullScreenSupported())
+        {
+            gd.setFullScreenWindow(frame);
+        } 
+
         openWindow();
 
         temperatureContainer = new Container();

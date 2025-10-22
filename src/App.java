@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class App {
     private static JFrame frame;
@@ -620,48 +623,52 @@ public class App {
 
     private static void update()
     {
-        if(page == 0)
-        {
-            if(lastPage != 0)
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        Runnable task = new Runnable() {
+            @Override
+            public void run() 
             {
-                printHome();
-                container.revalidate();
-                container.repaint();
+                try {
+                    if(page == 0)
+                    {
+                        if(lastPage != 0)
+                        {
+                            printHome();
+                            container.revalidate();
+                            container.repaint();
+                        }
+                        updateHome();
+                    } else if (page == 1) {
+                        if(lastPage != 1)
+                        {
+                            fullWeather();
+                            temperatureContainer.revalidate();
+                            windContainer.revalidate();
+                            rainContainer.revalidate();
+                        } 
+                        updateFullWeather();
+                    } else {
+                        page = 0;
+                        updateHome();
+                    }
+                    lastPage = page;
+
+                    int currentMinute = LocalDateTime.now().getMinute();
+                    if (currentMinute == 0 || currentMinute == 15 || currentMinute == 30 || currentMinute == 45)
+                    {
+                        page = 1;
+                    } else {
+                        page = 0;
+                    }
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                }  
             }
-            try {
-                updateHome();
-            } catch (Exception e)
-            {
-                e.printStackTrace();
-            }
+        };
 
-        } else if (page == 1) {
-            if(lastPage != 1)
-            {
-                fullWeather();
-            } 
-            updateFullWeather();
-        } else {
-            page = 0;
-            updateHome();
-        }
-        lastPage = page;
-
-        int currentMinute = LocalDateTime.now().getMinute();
-
-        if (currentMinute == 0 || currentMinute == 15 || currentMinute == 30 || currentMinute == 45)
-        {
-            page = 1;
-        } else {
-            page = 0;
-        }
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e){
-            Thread.currentThread().interrupt();
-        }
-        update();
+        scheduler.scheduleAtFixedRate(task, 0, 100, TimeUnit.MILLISECONDS);
     }
 
     private static void updateHome()

@@ -635,17 +635,13 @@ public class App {
                         if(lastPage != 0)
                         {
                             printHome();
-                            container.revalidate();
-                            container.repaint();
+                            fullReset();
                         }
                         updateHome();
                     } else if (page == 1) {
                         if(lastPage != 1)
                         {
                             fullWeather();
-                            temperatureContainer.revalidate();
-                            windContainer.revalidate();
-                            rainContainer.revalidate();
                         } 
                         updateFullWeather();
                     } else {
@@ -723,5 +719,21 @@ public class App {
 
         gTimeContainer.revalidate();
         gTimeContainer.repaint();
+    }
+
+    private static void fullReset()
+    {
+        container.removeAll();
+        container.revalidate();
+        container.repaint();
+
+        temperatureContainer = new Container();
+        temperatureContainer.setBounds(300 * sizeMultiplier, 200 * sizeMultiplier, 225 * sizeMultiplier, 70 * sizeMultiplier);
+
+        printHome();
+
+        container.paintComponents(container.getGraphics());
+
+        lastHour = LocalDateTime.now().getHour();
     }
 }

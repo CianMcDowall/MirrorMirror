@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
@@ -38,6 +39,8 @@ public class App {
     private static Article aus;
     private static Article world;
 
+    private static boolean cont;
+
     //SM = 1 for testing
     //SM = 2 for operation
     private static int sizeMultiplier = 1;
@@ -59,6 +62,7 @@ public class App {
         } 
 
         openWindow();
+        openKeyAdapter();
 
         temperatureContainer = new Container();
         temperatureContainer.setBounds(300 * sizeMultiplier, 200 * sizeMultiplier, 225 * sizeMultiplier, 70 * sizeMultiplier);
@@ -68,6 +72,8 @@ public class App {
         container.paintComponents(container.getGraphics());
 
         lastHour = LocalDateTime.now().getHour();
+
+        cont = true;
 
         new Thread(() -> {
             update();
@@ -82,6 +88,9 @@ public class App {
         frame.setVisible(true);
         frame.setSize(540 * sizeMultiplier, 960 * sizeMultiplier);
         frame.setLayout(null);
+        frame.setFocusable(true);
+        frame.requestFocusInWindow();
+
         container = frame.getContentPane();
         container.setBackground(Color.black);
     }
@@ -665,6 +674,7 @@ public class App {
         };
 
         scheduler.scheduleAtFixedRate(task, 0, 100, TimeUnit.MILLISECONDS);
+        if (!cont) scheduler.shutdown();
     }
 
     private static void updateHome()
@@ -735,5 +745,21 @@ public class App {
         container.paintComponents(container.getGraphics());
 
         lastHour = LocalDateTime.now().getHour();
+    }
+
+    private static void openKeyAdapter()
+    {
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
+                int keyCode = e.getKeyCode(); 
+
+                if(keyCode == 27)
+                {
+                    System.exit(0);
+                }
+            }
+        });
     }
 }
